@@ -1,0 +1,402 @@
+drop table Create_And_Link_Debit_Card_LT
+
+GO
+
+CREATE TABLE [dbo].[Create_And_Link_Debit_Card_LT](
+	[Leadid] [int] NULL,
+	[ProductName] [nvarchar](512) NULL,
+	[AccountNumber] [nvarchar](512) NULL,
+	[shortCurrency] [nvarchar](512) NULL,
+	[branchCode] [nvarchar](30) NULL,
+	[custProductName] [nvarchar](512) NULL,
+	[acctProductName] [nvarchar](512) NULL,
+	[custTemplate] [nvarchar](512) NULL,
+	[acctTemplate] [nvarchar](100) NULL,
+	[cardTemplate] [nvarchar](100) NULL,
+	[statementLocation] [nvarchar](24) NULL,
+	[secAddress][nvarchar](512) NULL,
+	[stmtAddress1] [nvarchar](512) NULL,
+	[stmtAddress2] [nvarchar](512) NULL,
+	[stmtCity] [nvarchar](512) NULL,
+	[stmtMobileNo] [nvarchar](512) NULL,
+	[stmtEmail] [nvarchar](512) NULL,
+	[iDNumber] [int] NULL,
+	[fullName] [nvarchar](512) NULL,
+	[firstName] [nvarchar](510) NULL,
+	[LastName] [nvarchar](512) NULL,
+	[sex] [nvarchar](2) NULL,
+	[maritalStatus] [nvarchar](32) NULL,
+	[initials] [nvarchar](200) NULL,
+	[atmWdlLimit] [nvarchar](512) NULL,
+	[posWdlLimit] [nvarchar](512) NULL,
+	[embossName] [nvarchar](512) NULL,
+	[LayoutId] [int] NULL,
+	[AccountCreated] [nvarchar](512) NULL,
+	[Currency] [nvarchar](512) NULL,
+	[DebitCardCreated] [nvarchar](512) NULL,
+	[ErrorCode] [nvarchar](50) NULL,
+	[Errormassage] [nvarchar](50) NULL,
+	[ProcessDate] [datetime] NULL
+) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[Create_And_Link_Debit_Card_LT] ADD  DEFAULT ((0)) FOR [ErrorCode]
+GO
+
+-------------------------------------------------------------------------------------------------------------
+drop table Create_And_Link_Debit_Card_Log
+GO
+
+
+CREATE TABLE [dbo].[Create_And_Link_Debit_Card_Log](
+	[Leadid] [int] NULL,
+	[ProductName] [nvarchar](512) NULL,
+	[AccountNumber] [nvarchar](512) NULL,
+	[shortCurrency] [nvarchar](512) NULL,
+	[branchCode] [nvarchar](30) NULL,
+	[custProductName] [nvarchar](512) NULL,
+	[acctProductName] [nvarchar](512) NULL,
+	[custTemplate] [nvarchar](512) NULL,
+	[acctTemplate] [nvarchar](100) NULL,
+	[cardTemplate] [nvarchar](100) NULL,
+	[statementLocation] [nvarchar](24) NULL,
+	[secAddress][nvarchar](512) NULL,
+	[stmtAddress1] [nvarchar](512) NULL,
+	[stmtAddress2] [nvarchar](512) NULL,
+	[stmtCity] [nvarchar](512) NULL,
+	[stmtMobileNo] [nvarchar](512) NULL,
+	[stmtEmail] [nvarchar](512) NULL,
+	[iDNumber] [int] NULL,
+	[fullName] [nvarchar](512) NULL,
+	[firstName] [nvarchar](510) NULL,
+	[LastName] [nvarchar](512) NULL,
+	[sex] [nvarchar](2) NULL,
+	[maritalStatus] [nvarchar](32) NULL,
+	[initials] [nvarchar](200) NULL,
+	[atmWdlLimit] [nvarchar](512) NULL,
+	[posWdlLimit] [nvarchar](512) NULL,
+	[embossName] [nvarchar](512) NULL,
+	[LayoutId] [int] NULL,
+	[AccountCreated] [nvarchar](512) NULL,
+	[Currency] [nvarchar](512) NULL,
+	[DebitCardCreated] [nvarchar](512) NULL,
+	[ErrorCode] [nvarchar](50) NULL,
+	[Errormassage] [nvarchar](50) NULL,
+	[ProcessDate] [datetime] NULL,
+	[BatchNumber] [INT] NULL
+) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[Create_And_Link_Debit_Card_Log] ADD  DEFAULT ((0)) FOR [ErrorCode]
+GO
+
+
+
+-------------------------------------------------------------------------------------------------------------
+
+CREATE OR ALTER proc [dbo].[Create_And_Link_Debit_fetch_Records](@ownerid int)
+as
+begin
+/*
+
+*/
+DECLARE @Jobid INT      
+      DECLARE @Taskid INT      
+      DECLARE @BatchNumber INT      
+      DECLARE @SuccessCount INT      
+      DECLARE @CURRENTDATE DATETIME      
+      SET nocount ON;      
+      -------------------------------------UPDATE COUNT IN CIS LOG      
+      SELECT @JOBID = jobid      
+      FROM   cis_job      
+      WHERE  ownerid = @OWNERID      
+             AND jobname = 'Create and Link Debit Card with Sync ESB Calls'      
+      SELECT @TASKID = taskid      
+      FROM   cis_task      
+      WHERE  ownerid = @OwnerID      
+             AND taskname = 'Fetch Create and Link debit Records into LT'      
+             AND jobid = @JOBID      
+      SET @CURRENTDATE = Getdate()      
+      SET @BATCHNUMBER = dbo.Cis_get_batch_number(@OwnerID, @JobID)      
+      --------Truncate table Before inserting any old records due to job/service failure                              
+      TRUNCATE TABLE Create_And_Link_Debit_Card_LT   
+
+
+
+INSERT INTO Create_And_Link_Debit_Card_LT (
+    leadid,
+    ProductName,
+    AccountNumber,
+    shortCurrency,
+    branchCode,
+    custProductName,
+    acctProductName,
+    custTemplate,
+    acctTemplate,
+    cardTemplate,
+    statementLocation,
+	secAddress,
+    stmtAddress1,
+    stmtAddress2,
+    stmtCity,
+    stmtMobileNo,
+    stmtEmail,
+    iDNumber,
+    fullName,
+    firstName,
+    LastName,
+    sex,
+    maritalStatus,
+    initials,
+    atmWdlLimit,
+    posWdlLimit,
+    embossName,
+	Layoutid,
+	AccountCreated,
+	Currency,
+	DebitCardCreated
+)
+select 
+L.leadid,
+L6.Lea_Ex6_19  AS ProductName,
+L7.Lea_Ex7_137 AS AccountNumber,
+L5.Lea_ex5_13 AS shortCurrency,
+L7.Lea_Ex7_198 AS branchCode,
+L6.Lea_Ex6_19 AS custProductName,
+L6.Lea_Ex6_19 AS acctProductName,
+L1.Lea_ex1_50 AS custTemplate,
+L9.Lea_Ex9_164 AS acctTemplate, 
+L1.Lea_ex1_51 AS cardTemplate,
+L8.Lea_Ex8_52 AS statementLocation,
+ 'ARAMEX'       AS secAddress,
+L8.Lea_Ex8_149 AS stmtAddress1, 
+L8.Lea_Ex8_150 AS stmtAddress2,
+L6.Lea_Ex6_171 AS stmtCity,
+L8.Lea_Ex8_74 AS stmtMobileNo,
+L.Email AS stmtEmail,
+L6.Lea_Ex6_5 AS iDNumber,
+L.LastName AS fullName,
+L6.Lea_Ex6_10 AS firstName,
+L6.Lea_Ex6_11 AS LastName,
+L7.Lea_Ex7_190 AS sex,
+L5.Lea_ex5_44 AS maritalStatus,
+L5.Lea_ex5_84 AS initials,
+L6.Lea_Ex6_145 AS atmWdlLimit,
+L6.Lea_Ex6_167 AS posWdlLimit,
+L7.Lea_Ex7_145 AS embossName,
+l.layoutid AS Layoutid,
+l8.Lea_Ex8_66 AS AccountCreated,
+l2.Lea_ex2_163 AS Currency,
+l7.Lea_Ex7_161 AS DebitCardCreated
+from 
+Leads L
+INNER JOIN Lea_Ex1 L1 
+ON L.OWNERID = L1.OwnerId 
+AND L.LeadID = L1.Lea_Ex1_Id
+INNER JOIN Lea_Ex2 L2 
+ON L.OWNERID = L2.OwnerId 
+AND L.LeadID = L2.Lea_Ex2_Id
+INNER JOIN Lea_Ex5 L5 
+ON L.OWNERID = L5.OwnerId 
+AND L.LeadID = L5.Lea_Ex5_Id
+INNER JOIN Lea_Ex6 L6 
+ON L.OWNERID = L6.OwnerId 
+AND L.LeadID = L6.Lea_Ex6_Id
+INNER JOIN Lea_Ex7 L7 
+ON L.OWNERID = L7.OwnerId 
+AND L.LeadID = L7.Lea_Ex7_Id
+INNER JOIN Lea_Ex8 L8 
+ON L.OWNERID = L8.OwnerId 
+AND L.LeadID = L8.Lea_Ex8_Id
+INNER JOIN Lea_Ex9 L9 
+ON L.OWNERID = L9.OwnerId 
+AND L.LeadID = L9.Lea_Ex9_Id
+INNER JOIN Lea_Ex10 L10 
+ON L.OWNERID = L10.OwnerId 
+AND L.LeadID = L10.Lea_Ex10_Id
+WHERE  l.ownerid = 716    
+			  
+             AND l.statuscodeid = 1000131 --Approved STATUSCODE      
+             AND l.layoutid IN ( 10010128,10010139) --Liability Account Opening LAYOUT      
+             AND l.processid IN (15010112 , 15010122) --Liability Account Opening PROCESS      
+             AND l8.Lea_Ex8_66 = 'Yes' --Account Creation code should be Yes        
+             AND l2.Lea_ex2_163 = 'AED'   --Currency only AED   
+			   
+			 AND ( l10.Lea_Ex10_137 IS NULL  OR  (l10.Lea_Ex10_137 ='Other AED' AND l.layoutid=10010139))--l10.Lea_Ex10_137 ='Other AED'          
+          --   AND Isnull(l8.Lea_Ex8_51, 0) < 1 --Create Debit card Retry count IAO_lea        
+           --  AND ( l7.Lea_Ex7_161 = 'No' OR l7.Lea_Ex7_161 IS NULL ) --Debit Card Return Code_IAO_Lea
+			 AND l.leadid=50026113 
+			 
+
+			 SELECT @SUCCESSCOUNT = Count(1)      
+      FROM   Create_And_Link_Debit_Card_LT    
+
+			 UPDATE cis_log      
+      SET    successcount = @SUCCESSCOUNT      
+      WHERE  ownerid = @OWNERID      
+             AND batchnumber = @BATCHNUMBER      
+             AND sourceid = @TASKID      
+             AND sourcetypeid = 3     
+
+end
+GO
+
+
+
+-------------------------------------------------------------------------------------------------------------
+
+CREATE OR ALTER   PROC [dbo].[Create_And_Link_Debit_Card](@ownerid int)          
+AS          
+  BEGIN          
+      SELECT 
+			 LeadId,
+			 ProductName,
+			 iDNumber AS RIM_ID ,
+			 AccountNumber,
+			 shortCurrency,
+			 branchCode,
+			 custProductName,
+			 acctProductName,
+			 custTemplate,
+			 acctTemplate,
+			 cardTemplate,
+			 secAddress,
+			 statementLocation,
+			 stmtAddress1,
+			 stmtAddress2,
+			 stmtCity,
+			 stmtMobileNo,
+			 stmtEmail,
+			 iDNumber,
+			 fullName,
+			 firstName,
+			 LastName,
+			 sex,
+			 maritalStatus,
+			 initials,
+			 atmWdlLimit,
+			 posWdlLimit,
+			 embossName
+      FROM   Create_And_Link_Debit_Card_LT          
+      WHERE  errorcode = 0          
+  END
+ 
+GO
+
+
+
+-------------------------------------------------------------------------------------------------------------
+
+
+
+
+CREATE OR ALTER PROC [dbo].[Create_And_Link_Debit_movelogs](@ownerid INT)        
+AS        
+        
+  BEGIN        
+      DECLARE @Jobid INT        
+      DECLARE @Taskid INT        
+      DECLARE @BatchNumber INT        
+      DECLARE @SuccessCount INT        
+      DECLARE @CURRENTDATE DATETIME        
+        
+      SET nocount ON;        
+        
+      -------------------------------------UPDATE COUNT IN CIS LOG         
+      SELECT @JOBID = jobid        
+      FROM   cis_job        
+      WHERE  ownerid = @OWNERID        
+             AND jobname = 'Create and Link Debit Card with Sync ESB Calls'        
+        
+      SELECT @TASKID = taskid        
+      FROM   cis_task        
+      WHERE  ownerid = @OwnerID        
+             AND taskname = 'Move Create and Link Debit Records to log table'        
+             AND jobid = @JOBID        
+        
+      SET @CURRENTDATE = Getdate()        
+      SET @BATCHNUMBER = dbo.Cis_get_batch_number(@OwnerID, @JobID)        
+        
+      INSERT INTO Create_And_Link_Debit_Card_Log        
+                  (LeadId,
+				  ProductName,
+				  AccountNumber,
+			 shortCurrency,
+			 branchCode,
+			 custProductName,
+			 acctProductName,
+			 custTemplate,
+			 acctTemplate,
+			 cardTemplate,
+			 statementLocation,
+			 secAddress,
+			 stmtAddress1,
+			 stmtAddress2,
+			 stmtCity,
+			 stmtMobileNo,
+			 stmtEmail,
+			 iDNumber,
+			 fullName,
+			 firstName,
+			 LastName,
+			 sex,
+			 maritalStatus,
+			 initials,
+			 atmWdlLimit,
+			 posWdlLimit,
+			 embossName,
+			 ErrorCode,
+			 Errormassage,
+			 ProcessDate,
+			 BatchNumber
+			 )        
+      SELECT   LeadId,
+	  ProductName,
+			  AccountNumber,
+			 shortCurrency,
+			 branchCode,
+			 custProductName,
+			 acctProductName,
+			 custTemplate,
+			 acctTemplate,
+			 cardTemplate,
+			 statementLocation,
+			 secAddress,
+			 stmtAddress1,
+			 stmtAddress2,
+			 stmtCity,
+			 stmtMobileNo,
+			 stmtEmail,
+			 iDNumber,
+			 fullName,
+			 firstName,
+			 LastName,
+			 sex,
+			 maritalStatus,
+			 initials,
+			 atmWdlLimit,
+			 posWdlLimit,
+			 embossName,
+			 ErrorCode,
+			 Errormassage,  
+             @CURRENTDATE AS ProcessedDate,        
+             @BATCHNUMBER AS Batchnumber        
+      FROM   Create_And_Link_Debit_Card_LT        
+        
+      SELECT @SUCCESSCOUNT = @@ROWCOUNT        
+        
+      UPDATE cis_log        
+      SET    successcount = @SUCCESSCOUNT        
+      WHERE  ownerid = @OWNERID        
+             AND batchnumber = @BATCHNUMBER        
+             AND sourceid = @TASKID        
+             AND sourcetypeid = 3        
+  END 
+
+GO
+
+
+
+-------------------------------------------------------------------------------------------------------------
+
+
